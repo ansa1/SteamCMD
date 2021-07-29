@@ -1,29 +1,15 @@
 #include <Windows.h>
 #include <iostream>
-#include <chrono>
 #include <fstream>
 #include <string>
 #include <tchar.h>
 
-/*
-     Utils
-*/
-std::basic_string<TCHAR> current_dir() {
-	TCHAR cur_path[256];
-	GetCurrentDirectory(256, cur_path);
-	return cur_path;
-}
-
-std::wstring to_wstring(const char* str) {
-	size_t length1 = strlen(str);
-	std::wstring res(length1, L'#');
-	mbstowcs(&res[0], str, length1);
-	return res;
-}
+#include "Utils.h"
 
 /*
 * replace "steam_login" -> steam_login
 *         "steam_pass"  -> steam_pass in 'filename' inside the current working directory
+* replace previous appID to new in following commands: "app_update" and "app_run"
 */
 void patchScript(char* steam_login, char* steam_pass, const char* appID, std::wstring filename) {
 	TCHAR tempfilename[256]{ TEXT("test") };
@@ -97,6 +83,7 @@ int main(int argc, TCHAR* argv[])
 	ZeroMemory(&cif, sizeof(STARTUPINFO));
 	PROCESS_INFORMATION pi;
 	std::wstring cmdParams{ L" +runscript " + script_file }; // SteamCMD params
+
 	/*
 	Step 1:
 	* Create and run the process SteamCMD with our script which authorize to account, change install directory and download the game
@@ -104,7 +91,6 @@ int main(int argc, TCHAR* argv[])
 	* [TODO]: Handle exceptions and errors (e.g. wrong login/password, enter a Steam-guard, invalid path to directory, appID, 
 	*                                            not enough space on the disc, downloading&validating > time-out of WaitForSingleObject and etc)
 	*/
-	
 	if (!CreateProcess(L"c:\\steamcmd\\steamcmd.exe", (LPWSTR)cmdParams.c_str(), // note: server should has SteamCMD app in C:\ 
 		NULL, NULL, FALSE, CREATE_NEW_CONSOLE | HIGH_PRIORITY_CLASS, NULL, NULL, &cif, &pi)) {
 		std::cout << "Unable to create the process!" << std::endl;
